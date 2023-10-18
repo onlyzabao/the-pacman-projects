@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -18,6 +18,7 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
+
 
 class SearchProblem:
     """
@@ -68,9 +69,11 @@ def tinyMazeSearch(problem):
     sequence of moves will be incorrect, so only use this for tinyMaze.
     """
     from game import Directions
+
     s = Directions.SOUTH
     w = Directions.WEST
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem: SearchProblem):
     """
@@ -89,12 +92,13 @@ def depthFirstSearch(problem: SearchProblem):
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
 
+
 def breadthFirstSearch(problem: SearchProblem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
     from util import Queue
 
-    if (problem.isGoalState(problem.getStartState())):
+    if problem.isGoalState(problem.getStartState()):
         return []
 
     path = []
@@ -114,17 +118,19 @@ def breadthFirstSearch(problem: SearchProblem):
             return path
 
         for successor in problem.getSuccessors(v):
-            next_state, action, _ = successor  
+            next_state, action, _ = successor
 
             if next_state not in visited:
                 queue.push((next_state, path + [action]))
 
     util.raiseNotDefined()
 
+
 def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     util.raiseNotDefined()
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -133,69 +139,38 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem: SearchProblem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     from util import PriorityQueue
 
-    # startState = problem.getStartState()
-    # g = { startState: 0 }
-    # f = g[startState] + heuristic(startState, problem)
-
-    # states = PriorityQueue()
-    # states.push(startState, f)
-
-    # actions = { startState: [] }
-
-    # while (True):
-    #     if states.isEmpty():
-    #         return
-        
-    #     expandedState = states.pop()
-    #     expandedActions = actions[expandedState]
-
-    #     if problem.isGoalState(expandedState):
-    #         return expandedActions
-        
-    #     for (successorState, action, _) in problem.getSuccessors(expandedState):
-    #         tmp_g = g[expandedState] + problem.getCostOfActions([action])
-    #         if successorState in g and g[successorState] < tmp_g:
-    #             continue
-
-    #         g[successorState] = tmp_g
-    #         f = g[successorState] + heuristic(successorState, problem)
-
-    #         states.update(successorState, f)
-
-    #         actions[successorState] = expandedActions + [action]
-
     startState = problem.getStartState()
 
     openStates = PriorityQueue()
-    openStates.push(startState, 0)
+    openStates.push(startState, 0.0)
 
-    g = { startState: 0 }
+    g = {startState: 0.0}
 
-    path = { startState: [] }
+    path = {startState: []}
 
-    while (True):
+    while True:
         if openStates.isEmpty():
             return
-        
+
         currentState = openStates.pop()
 
         if problem.isGoalState(currentState):
             return path[currentState]
 
-        for (successorState, action, _) in problem.getSuccessors(currentState):
-            tmp_currentState_g = g[currentState] + problem.getCostOfActions([action])
-            if successorState not in g or tmp_currentState_g < g[currentState]:
+        for successorState, action, _ in problem.getSuccessors(currentState):
+            tmp_currentState_g = problem.getCostOfActions(path[currentState] + [action])
+            if (successorState not in g) or (tmp_currentState_g < g[successorState]):
                 g[successorState] = tmp_currentState_g
-
-                f = tmp_currentState_g + heuristic(currentState, problem)
-                openStates.update(successorState, f)
-
                 path[successorState] = path[currentState] + [action]
+
+                f = tmp_currentState_g + heuristic(successorState, problem)
+                openStates.update(successorState, f)
 
     util.raiseNotDefined()
 
