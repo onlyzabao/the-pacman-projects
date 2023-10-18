@@ -90,6 +90,33 @@ def depthFirstSearch(problem: SearchProblem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    from util import Stack
+
+    if problem.isGoalState(problem.getStartState()):
+        return []
+
+    path = []
+    visited = []
+    stack = Stack()
+    stack.push((problem.getStartState(), []))
+
+    while not stack.isEmpty():
+        v, path = stack.pop()
+
+        if v in visited:
+            continue
+
+        visited.append(v)
+
+        if problem.isGoalState(v):
+            return path
+
+        for successor in problem.getSuccessors(v):
+            next_state, action, _ = successor
+
+            if next_state not in visited:
+                stack.push((next_state, path + [action]))
+
     util.raiseNotDefined()
 
 
