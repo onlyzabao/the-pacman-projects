@@ -157,11 +157,10 @@ def uniformCostSearch(problem: SearchProblem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
     from util import PriorityQueue
+
     s = problem.getStartState()
     pQueue = PriorityQueue()
-    trace = {
-        s: ([], 0)
-    }
+    trace = {s: ([], 0)}
     pQueue.push(s, 0)
     while not pQueue.isEmpty():
         ex = pQueue.pop()
@@ -169,13 +168,13 @@ def uniformCostSearch(problem: SearchProblem):
             exPath, exCost = trace[ex]
             return exPath
         successors = problem.getSuccessors(ex)
-        for (successor, action, stepCost) in successors:
+        for successor, action, stepCost in successors:
             exPath, exCost = trace[ex]
             sNewPath = exPath + [action]
             sNewCost = exCost + stepCost
-            if(successor in trace.keys()):
+            if successor in trace.keys():
                 sOldPath, sOldCost = trace[successor]
-                if(sNewCost < sOldCost):
+                if sNewCost < sOldCost:
                     trace[successor] = (sNewPath, sNewCost)
                     pQueue.update(successor, sNewCost)
             else:
