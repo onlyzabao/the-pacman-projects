@@ -301,8 +301,8 @@ class CornersProblem(search.SearchProblem):
         for i, corner in enumerate(self.corners):
             if self.startingPosition == corner:
                 visited_corners[i] = 1
-
-        return (self.startingPosition, visited_corners)
+                
+        return (self.startingPosition, tuple(visited_corners))
 
     def isGoalState(self, state: Any):
         """
@@ -340,11 +340,14 @@ class CornersProblem(search.SearchProblem):
             hitsWall = self.walls[nextx][nexty]
 
             if not hitsWall:
-                next_state = ((nextx, nexty), visited[:])  # Make a copy of the visited list
+                next_visited = list(visited)
+                # next_state = ((nextx, nexty), visited[:])  # Make a copy of the visited list
                 if (nextx, nexty) in self.corners:
                     corner_index = self.corners.index((nextx, nexty))
                     if visited[corner_index] == 0:
-                        next_state[1][corner_index] = 1
+                        next_visited[corner_index] = 1
+                        
+                next_state = ((nextx, nexty), tuple(next_visited))        
                 successors.append((next_state, action, 1))
 
         self._expanded += 1 # DO NOT CHANGE
