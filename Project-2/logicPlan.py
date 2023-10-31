@@ -314,6 +314,22 @@ def pacphysicsAxioms(t: int, all_coords: List[Tuple], non_outer_wall_coords: Lis
     pacphysics_sentences = []
 
     "*** BEGIN YOUR CODE HERE ***"
+    for (x, y) in all_coords:
+        pacphysics_sentences.append(logic.PropSymbolExpr(wall_str, x, y) >> ~logic.PropSymbolExpr(pacman_str, x, y, time = t))
+
+    second_sentence = exactlyOne([logic.PropSymbolExpr(pacman_str, x, y, time=t) for (x, y) in non_outer_wall_coords])
+    pacphysics_sentences.append(second_sentence)
+
+    third_sentence = exactlyOne([logic.PropSymbolExpr(action, time=t) for action in DIRECTIONS])
+    pacphysics_sentences.append(third_sentence)
+
+    if (sensorModel): 
+        pacphysics_sentences.append(sensorModel(t, non_outer_wall_coords))
+
+    if (successorAxioms and walls_grid and t):
+        pacphysics_sentences.append(successorAxioms(t, walls_grid, non_outer_wall_coords))
+
+    return logic.conjoin(pacphysics_sentences)
     util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
@@ -348,6 +364,16 @@ def checkLocationSatisfiability(x1_y1: Tuple[int, int], x0_y0: Tuple[int, int], 
     KB.append(conjoin(map_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
+    for t in range(0, 2):
+        KB.append(pacphysicsAxioms(t, all_coords, non_outer_wall_coords, walls_grid, None, allLegalSuccessorAxioms))
+
+    KB.append(logic.PropSymbolExpr(pacman_str, x0, y0, time = 0))
+    KB.append(logic.PropSymbolExpr(action1, time = 1))
+    KB.append(logic.PropSymbolExpr(action0, time = 0))
+    
+    # a model where Pacman is, and is not, at (x1, y1) at time t = 1
+    return (findModel(logic.conjoin(KB) & logic.PropSymbolExpr(pacman_str, x1, y1, time = 1)), 
+            findModel(logic.conjoin(KB) & ~logic.PropSymbolExpr(pacman_str, x1, y1, time = 1)))
     util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
