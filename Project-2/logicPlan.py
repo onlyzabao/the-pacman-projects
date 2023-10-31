@@ -242,6 +242,7 @@ def pacmanSuccessorAxiomSingle(x: int, y: int, time: int, walls_grid: List[List[
         return None
     
     "*** BEGIN YOUR CODE HERE ***"
+    return PropSymbolExpr(pacman_str, x, y, time=now) % logic.disjoin(possible_causes)
     util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
@@ -374,6 +375,27 @@ def positionLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
+    start_state = logic.PropSymbolExpr(pacman_str, x0, y0, time=0)
+    KB.append(start_state)
+
+    for t in range(50):
+        print("Time step = {}".format(t))
+
+        pacman_locations = exactlyOne([logic.PropSymbolExpr(pacman_str, x, y, time=t) for (x, y) in non_wall_coords])
+        KB.append(pacman_locations)
+
+        goal_state = logic.PropSymbolExpr(pacman_str, xg, yg, time=t)
+        model = findModel(goal_state & logic.conjoin(KB))
+        if (model):
+            return extractActionSequence(model, actions)
+        
+        possible_actions = exactlyOne([logic.PropSymbolExpr(action, time=t) for action in actions])
+        KB.append(possible_actions)
+
+        for (x, y) in non_wall_coords:
+            KB.append(pacmanSuccessorAxiomSingle(x, y, t+1, walls_grid))
+
+    return None
     util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
