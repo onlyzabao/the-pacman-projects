@@ -451,6 +451,46 @@ def foodLogicPlan(problem) -> List:
     KB = []
 
     "*** BEGIN YOUR CODE HERE ***"
+    start_state = logic.PropSymbolExpr(pacman_str, x0, y0, time = 0)
+    KB.append(start_state)
+    
+    # Initialize Food[x,y]_t variables with the code PropSymbolExpr(food_str, x, y, time=t),
+    # where each variable is true if and only if there is a food at (x, y) at time t
+    for (x, y) in food: 
+        KB.append(logic.PropSymbolExpr(food_str, x, y, time = 0))
+
+    for t in range(50):
+        print("Time step = {}".format(t))
+        
+        pacman_locations = exactlyOne([logic.PropSymbolExpr(pacman_str, x, y, time=t) for (x, y) in non_wall_coords])
+        KB.append(pacman_locations)
+
+        goal_state = [~logic.PropSymbolExpr(food_str, x, y, time = t) for (x, y) in food]
+        model = findModel(logic.conjoin(goal_state + KB))
+        if model:
+            return extractActionSequence(model, actions)
+
+
+        possible_actions = exactlyOne([logic.PropSymbolExpr(action, time = t) for action in actions])
+        KB.append(possible_actions)
+
+        for wall_coord in non_wall_coords: 
+            KB.append(pacmanSuccessorAxiomSingle(wall_coord[0], wall_coord[1], t+1, walls))
+
+        # Add a food successor axiom: What is the relation between Food[x,y]_t+1 and Food[x,y]_t and Pacman[x,y]_t? The food successor axiom 
+        # should only involve these three variables, for any given (x, y) and t.
+        for (x, y) in food:
+            pacman_loc = logic.PropSymbolExpr(pacman_str, x, y, time = t)
+            food_loc = logic.PropSymbolExpr(food_str, x, y, time = t)
+            food_remain = logic.PropSymbolExpr(food_str, x, y, time = t+1)
+            
+            get_food = food_loc & pacman_loc
+            avoid_food = food_loc & ~pacman_loc
+
+            KB.append(avoid_food >> food_remain)
+            KB.append(get_food >> ~food_remain)
+ 
+    return None
     util.raiseNotDefined()
     "*** END YOUR CODE HERE ***"
 
