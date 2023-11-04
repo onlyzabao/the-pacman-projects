@@ -27,6 +27,7 @@ class PerceptronModel(object):
         Returns: a node containing a single number (the score)
         """
         "*** YOUR CODE HERE ***"
+        return nn.DotProduct(x, self.w)
 
     def get_prediction(self, x):
         """
@@ -35,12 +36,32 @@ class PerceptronModel(object):
         Returns: 1 or -1
         """
         "*** YOUR CODE HERE ***"
+        score = nn.as_scalar(PerceptronModel.run(self, x))
+    
+        if score < 0:
+            return -1
+        else:
+            return 1
 
     def train(self, dataset):
         """
         Train the perceptron until convergence.
         """
         "*** YOUR CODE HERE ***"
+        batch_size = 1
+        while (True):
+            converged = True
+            
+            for x, y in dataset.iterate_once(batch_size):
+                desired_y = nn.as_scalar(y)
+                predicted_y = self.get_prediction(x)
+                if predicted_y != desired_y:
+                    nn.Parameter.update(self.w, x, desired_y)
+                    converged = False
+
+            if converged:
+                break
+
 
 class RegressionModel(object):
     """
