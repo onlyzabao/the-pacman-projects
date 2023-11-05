@@ -619,11 +619,47 @@ def slam(problem, agent) -> Generator:
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Get initial location (pac_x_0, pac_y_0) of Pacman, and add this to KB.
+    KB.append(PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time=0))
+    # Update known_map accordingly and add the appropriate expression to KB.
+    known_map[pac_x_0][pac_y_0] = 0
+    KB.append(~PropSymbolExpr(wall_str, pac_x_0, pac_y_0))
 
     for t in range(agent.num_timesteps):
+        # Add pacphysics, action, and percept information to KB. Use SLAMSensorAxioms, SLAMSuccessorAxioms, and numAdjWallsPerceptRules.
+        KB.append(pacphysicsAxioms(t, all_coords, non_outer_wall_coords, known_map, SLAMSensorAxioms, SLAMSuccessorAxioms))
+        KB.append(PropSymbolExpr(agent.actions[t], time = t))
+
+        percept_rules = numAdjWallsPerceptRules(t, agent.getPercepts())
+        KB.append(percept_rules)
+        
+        # Find provable wall locations with updated KB.
+        for x, y in non_outer_wall_coords:
+            if entails(conjoin(KB), PropSymbolExpr(wall_str, x, y)):
+                KB.append(PropSymbolExpr(wall_str, x, y))
+                known_map[x][y] = 1
+            elif entails(conjoin(KB), ~PropSymbolExpr(wall_str, x, y)):
+                KB.append(~PropSymbolExpr(wall_str, x, y))
+                known_map[x][y] = 0
+        
+        # Find possible pacman locations with updated KB.
+        possible_locations = []
+        for x, y in non_outer_wall_coords:
+            if findModel(conjoin(KB) & PropSymbolExpr(pacman_str, x, y, time=t)) != False:
+                possible_locations.append((x, y))
+
+            if entails(conjoin(KB), PropSymbolExpr(pacman_str, x, y, time=t)):
+                KB.append(PropSymbolExpr(pacman_str, x, y, time=t))
+            elif entails(conjoin(KB), ~PropSymbolExpr(pacman_str, x, y, time=t)):
+                KB.append(~PropSymbolExpr(pacman_str, x, y, time=t))
+        
+        # Call agent.moveToNextState(action_t) on the current agent action at timestep t.
+        agent.moveToNextState(agent.actions[t])
+        
         "*** END YOUR CODE HERE ***"
         yield (known_map, possible_locations)
+    
+    util.raiseNotDefined()
 
 
 # Abbreviations
