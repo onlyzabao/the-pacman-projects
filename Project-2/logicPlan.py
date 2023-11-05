@@ -563,11 +563,35 @@ def mapping(problem, agent) -> Generator:
     KB.append(conjoin(outer_wall_sent))
 
     "*** BEGIN YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Get initial location (pac_x_0, pac_y_0) of Pacman, and add this to KB
+    KB.append(PropSymbolExpr(pacman_str, pac_x_0, pac_y_0, time=0))
+    # Also add whether there is a wall at that location.
+    KB.append(~PropSymbolExpr(wall_str, pac_x_0, pac_y_0))
 
     for t in range(agent.num_timesteps):
+        # Add pacphysics, action, and percept information to KB
+        KB.append(pacphysicsAxioms(t, all_coords, non_outer_wall_coords, known_map, sensorAxioms, allLegalSuccessorAxioms))
+
+        KB.append(PropSymbolExpr(agent.actions[t], time = t))
+
+        percepts = agent.getPercepts()
+        percept_rules = fourBitPerceptRules(t, percepts)
+        KB.append(percept_rules)
+        
+        # Find provable wall locations with updated KB
+        for (x, y) in non_outer_wall_coords:
+            if entails(conjoin(KB), PropSymbolExpr(wall_str, x, y)):
+                KB.append(PropSymbolExpr(wall_str, x, y))
+                known_map[x][y] = 1
+            elif entails(conjoin(KB), ~PropSymbolExpr(wall_str, x, y)):
+                KB.append(~PropSymbolExpr(wall_str, x, y))
+                known_map[x][y] = 0
+
+        agent.moveToNextState(agent.actions[t])
         "*** END YOUR CODE HERE ***"
         yield known_map
+
+    util.raiseNotDefined()
 
 #______________________________________________________________________________
 # QUESTION 8
