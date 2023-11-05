@@ -1,5 +1,6 @@
 import nn
 
+
 class PerceptronModel(object):
     def __init__(self, dimensions):
         """
@@ -37,7 +38,7 @@ class PerceptronModel(object):
         """
         "*** YOUR CODE HERE ***"
         score = nn.as_scalar(PerceptronModel.run(self, x))
-    
+
         if score < 0:
             return -1
         else:
@@ -51,7 +52,7 @@ class PerceptronModel(object):
         batch_size = 1
         while (True):
             converged = True
-            
+
             for x, y in dataset.iterate_once(batch_size):
                 desired_y = nn.as_scalar(y)
                 predicted_y = self.get_prediction(x)
@@ -69,6 +70,7 @@ class RegressionModel(object):
     numbers to real numbers. The network should be sufficiently large to be able
     to approximate sin(x) on the interval [-2pi, 2pi] to reasonable precision.
     """
+
     def __init__(self):
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
@@ -102,6 +104,7 @@ class RegressionModel(object):
         """
         "*** YOUR CODE HERE ***"
 
+
 class DigitClassificationModel(object):
     """
     A model for handwritten digit classification using the MNIST dataset.
@@ -116,9 +119,14 @@ class DigitClassificationModel(object):
     methods here. We recommend that you implement the RegressionModel before
     working on this part of the project.)
     """
+
     def __init__(self):
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
+        self.w0 = nn.Parameter(784, 200)
+        self.b0 = nn.Parameter(1, 200)
+        self.w1 = nn.Parameter(200, 10)
+        self.b1 = nn.Parameter(1, 10)
 
     def run(self, x):
         """
@@ -135,6 +143,9 @@ class DigitClassificationModel(object):
                 (also called logits)
         """
         "*** YOUR CODE HERE ***"
+        hidden_layer = nn.ReLU(nn.AddBias(nn.Linear(x, self.w0), self.b0))
+        output_layer = nn.AddBias(nn.Linear(hidden_layer, self.w1), self.b1)
+        return output_layer
 
     def get_loss(self, x, y):
         """
@@ -150,12 +161,34 @@ class DigitClassificationModel(object):
         Returns: a loss node
         """
         "*** YOUR CODE HERE ***"
+        return nn.SoftmaxLoss(self.run(x), y)
 
     def train(self, dataset):
         """
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
+        learning_rate = 0.3
+        batch_size = 40
+        num_epochs = 5
+        for epoch in range(num_epochs):
+            for x, y in dataset.iterate_once(batch_size):
+                # Forward 
+                loss = self.get_loss(x, y)
+
+                # Backpropagation
+                grad = nn.gradients(loss, [self.w0, self.b0, self.w1, self.b1])
+
+                # Update model parameters
+                self.w0.update(grad[0], -learning_rate)
+                self.b0.update(grad[1], -learning_rate)
+                self.w1.update(grad[2], -learning_rate)
+                self.b1.update(grad[3], -learning_rate)
+
+            val_accuracy = dataset.get_validation_accuracy()
+            print(
+                f"Epoch {epoch + 1}, Validation Accuracy: {val_accuracy * 100:.2f}%")
+
 
 class LanguageIDModel(object):
     """
@@ -165,6 +198,7 @@ class LanguageIDModel(object):
     methods here. We recommend that you implement the RegressionModel before
     working on this part of the project.)
     """
+
     def __init__(self):
         # Our dataset contains words from five different languages, and the
         # combined alphabets of the five languages contain a total of 47 unique
