@@ -209,6 +209,12 @@ class LanguageIDModel(object):
 
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
+        self.dimensions = len(self.languages)
+        self.hidden_layer_size = 300
+
+        self.W0 = nn.Parameter(self.num_chars, self.hidden_layer_size)
+        self.W1 = nn.Parameter(self.hidden_layer_size, self.hidden_layer_size)
+        self.W2 = nn.Parameter(self.hidden_layer_size, self.dimensions)
 
     def run(self, xs):
         """
@@ -240,6 +246,14 @@ class LanguageIDModel(object):
                 (also called logits)
         """
         "*** YOUR CODE HERE ***"
+        z = nn.ReLU(nn.Linear(xs[0], self.W0))
+
+        for i in range(1, len(xs)):
+            z = nn.ReLU(nn.Add(nn.Linear(xs[i], self.W0), nn.Linear(z, self.W1)))
+
+        z = nn.Linear(z, self.W2)
+
+        return z
 
     def get_loss(self, xs, y):
         """
@@ -256,9 +270,29 @@ class LanguageIDModel(object):
         Returns: a loss node
         """
         "*** YOUR CODE HERE ***"
+        return nn.SoftmaxLoss(self.run(xs), y)
 
     def train(self, dataset):
         """
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
+        learning_rate = 0.05
+        batch_size = 40
+        num_epochs = 10
+        for epoch in range(num_epochs):
+            for x, y in dataset.iterate_once(batch_size):
+                # Forward 
+                loss = self.get_loss(x, y)
+
+                # Backpropagation
+                grad = nn.gradients(loss, [self.W0, self.W1, self.W2])
+
+                # Update model parameters
+                self.W0.update(grad[0], -learning_rate)
+                self.W1.update(grad[1], -learning_rate)
+                self.W2.update(grad[2], -learning_rate)
+
+            val_accuracy = dataset.get_validation_accuracy()
+
+            print(f"Epoch {epoch + 1}, Validation Accuracy: {val_accuracy * 100:.2f}%")
