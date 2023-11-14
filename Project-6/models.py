@@ -210,7 +210,7 @@ class LanguageIDModel(object):
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
         self.dimensions = len(self.languages)
-        self.hidden_layer_size = 300
+        self.hidden_layer_size = 200
 
         self.W0 = nn.Parameter(self.num_chars, self.hidden_layer_size)
         self.W1 = nn.Parameter(self.hidden_layer_size, self.hidden_layer_size)
@@ -278,8 +278,8 @@ class LanguageIDModel(object):
         """
         "*** YOUR CODE HERE ***"
         learning_rate = 0.05
-        batch_size = 40
-        num_epochs = 10
+        batch_size = 50
+        num_epochs = 20
         for epoch in range(num_epochs):
             for x, y in dataset.iterate_once(batch_size):
                 # Forward 
